@@ -2,7 +2,6 @@
     "name":               "naneau/php-obfuscator",
     "description":        "A basic but functional PHP obfuscator for object oriented PHP",
     "license":            "MIT",
-    "minimum-stability":  "dev",
 
     "bin": [
         "bin/obfuscate"
@@ -22,11 +21,11 @@
     ],
 
     "require": {
-        "nikic/php-parser":              "~1@dev",
-        "symfony/console":               "~2.5",
-        "symfony/dependency-injection":  "~2.5",
-        "symfony/config":                "~2.5",
-        "symfony/yaml":                  "~2.5",
-        "symfony/event-dispatcher":      "~2.5"
+        "nikic/php-parser":              "^2.0",
+        "symfony/config":                "^2.5|^3.0",
+        "symfony/console":               "^2.5|^3.0",
+        "symfony/dependency-injection":  "^2.5|^3.0",
+        "symfony/event-dispatcher":      "^2.5|^3.0",
+        "symfony/yaml":                  "^2.5|^3.0"
     }
 }
