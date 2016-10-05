@@ -8,6 +8,7 @@
 
 namespace Naneau\Obfuscator\Console\Command;
 
+use Illuminate\Filesystem\Filesystem;
 use Naneau\Obfuscator\Container;
 
 use Naneau\Obfuscator\Obfuscator;
@@ -191,24 +192,14 @@ class ObfuscateCommand extends Command
      * @param string $from
      * @param string $to
      * @return ObfuscateCommand
-     **/
+     * @throws \Exception
+     */
     private function copyDir($from, $to)
     {
-        // FIXME implement native copy
-        $output = array();
-        $return = 0;
+        $filesystem = new Filesystem();
+        $wasCopied = $filesystem->copyDirectory($from, $to);
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // WINDOWS
-            $command = sprintf('XCOPY "%s" "%s" /hievry', $from, $to);
-        } else {
-            // *NIX
-            $command = sprintf('cp -rf %s %s', $from, $to);
-        }        
-
-        exec($command, $output, $return);
-
-        if ($return !== 0)  {
+        if ( ! $wasCopied)  {
             throw new \Exception('Could not copy directory');
         }
 
