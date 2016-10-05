@@ -29,8 +29,9 @@ services:
     obfuscator.node_traverser:
         class: PhpParser\NodeTraverser
         calls:
-            - [addVisitor, ["@obfuscator.node_visitor.scramble_variable"]]
+            - [addVisitor, ["@obfuscator.node_visitor.scramble_function"]]
             - [addVisitor, ["@obfuscator.node_visitor.scramble_private_method"]]
+            - [addVisitor, ["@obfuscator.node_visitor.scramble_variable"]]
 
     # Variable scrambler
     obfuscator.node_visitor.scramble_variable:
@@ -47,6 +48,11 @@ services:
              - "@obfuscator.scrambler"
         calls:
             - [addIgnore, [%obfuscator.scramble_private_method.ignore%]]
+
+    obfuscator.node_visitor.scramble_function:
+        class: Naneau\Obfuscator\Node\Visitor\ScrambleFunction
+        arguments:
+             - "@obfuscator.scrambler"
 
     # Scramble private properties
     obfuscator.node_visitor.scramble_private_property:

@@ -18,7 +18,7 @@ namespace Naneau\Obfuscator;
  * @package         Obfuscator
  * @subpackage      Scrambler
  */
-class StringScrambler
+class StringScrambler implements StringScramblerInterface
 {
     /**
      * Salt
@@ -39,8 +39,8 @@ class StringScrambler
             $this->setSalt(
                 md5(microtime(true) . rand(0,1))
             );
-        } else { 
-            $this->setSalt($salt); 
+        } else {
+            $this->setSalt($salt);
         }
     }
 
@@ -76,5 +76,10 @@ class StringScrambler
         $this->salt = $salt;
 
         return $this;
+    }
+
+    public function test(array $x)
+    {
+        $x = array_merge(...$x);
     }
 }

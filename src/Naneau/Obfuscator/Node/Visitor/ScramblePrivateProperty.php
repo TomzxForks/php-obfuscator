@@ -15,6 +15,7 @@ use Naneau\Obfuscator\Node\Visitor\SkipTrait;
 use Naneau\Obfuscator\Node\Visitor\Scrambler as ScramblerVisitor;
 use Naneau\Obfuscator\StringScrambler;
 
+use Naneau\Obfuscator\StringScramblerInterface;
 use PhpParser\Node;
 
 use PhpParser\Node\Stmt\Class_ as ClassNode;
@@ -48,7 +49,7 @@ class ScramblePrivateProperty extends ScramblerVisitor
      * @param  StringScrambler $scrambler
      * @return void
      **/
-    public function __construct(StringScrambler $scrambler)
+    public function __construct(StringScramblerInterface $scrambler)
     {
         parent::__construct($scrambler);
     }

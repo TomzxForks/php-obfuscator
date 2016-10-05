@@ -10,6 +10,7 @@ namespace Naneau\Obfuscator\Node\Visitor;
 
 use Naneau\Obfuscator\StringScrambler;
 
+use Naneau\Obfuscator\StringScramblerInterface;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\Node;
 
@@ -29,7 +30,7 @@ abstract class Scrambler extends NodeVisitorAbstract
     /**
      * The string scrambler
      *
-     * @var StringScrambler
+     * @var StringScramblerInterface
      **/
     private $scrambler;
 
@@ -43,10 +44,10 @@ abstract class Scrambler extends NodeVisitorAbstract
     /**
      * Constructor
      *
-     * @param  StringScrambler $scrambler
+     * @param  StringScramblerInterface $scrambler
      * @return void
      **/
-    public function __construct(StringScrambler $scrambler)
+    public function __construct(StringScramblerInterface $scrambler)
     {
         $this->setScrambler($scrambler);
     }
@@ -60,6 +61,10 @@ abstract class Scrambler extends NodeVisitorAbstract
      **/
     protected function scramble(Node $node, $var = 'name')
     {
+        if ($node->getAttribute('scrambled')) {
+            return;
+        }
+
         // String/value to scramble
         $toScramble = $node->$var;
 
@@ -81,6 +86,8 @@ abstract class Scrambler extends NodeVisitorAbstract
             return $node;
         }
 
+        $node->setAttribute('scrambled', true);
+
         // Prefix with 'p' so we dont' start with an number
         $node->$var = $this->scrambleString($toScramble);
 
@@ -96,7 +103,7 @@ abstract class Scrambler extends NodeVisitorAbstract
      **/
     protected function scrambleString($string)
     {
-        return 's' . $this->getScrambler()->scramble($string);
+        return $this->getScrambler()->scramble($string);
     }
 
     /**
@@ -112,10 +119,10 @@ abstract class Scrambler extends NodeVisitorAbstract
     /**
      * Set the string scrambler
      *
-     * @param  StringScrambler $scrambler
+     * @param  StringScramblerInterface $scrambler
      * @return RenameParameter
      */
-    public function setScrambler(StringScrambler $scrambler)
+    public function setScrambler(StringScramblerInterface $scrambler)
     {
         $this->scrambler = $scrambler;
 
