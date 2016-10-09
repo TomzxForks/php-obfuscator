@@ -233,22 +233,16 @@ class Obfuscator
      * Obfuscate a single file's contents
      *
      * @param  string $file
-     * @param  boolean $ignoreError if true, do not throw an Error and 
+     * @param  boolean $ignoreError if true, do not throw an Error and
      *                              exit, but continue with next file
      * @return string obfuscated contents
      **/
-    private function obfuscateFileContents($file, $ignoreError)
+    public function obfuscateFileContents($file, $ignoreError)
     {
         try {
-            // Input code
             $source = php_strip_whitespace($file);
 
-            // Get AST
-            $ast = $this->getTraverser()->traverse(
-                $this->getParser()->parse($source)
-            );
-
-            return "<?php\n" . $this->getPrettyPrinter()->prettyPrint($ast);
+            $this->obfuscateContent($source);
         } catch (Exception $e) {
             if($ignoreError) {
                 sprintf('Could not parse file "%s"', $file);
@@ -264,5 +258,19 @@ class Obfuscator
                 );
             }
         }
+    }
+
+    /**
+     * @param string $source
+     * @return string
+     */
+    public function obfuscateContent($source)
+    {
+        // Get AST
+        $ast = $this->getTraverser()->traverse(
+            $this->getParser()->parse($source)
+        );
+
+        return "<?php\n" . $this->getPrettyPrinter()->prettyPrint($ast);
     }
 }
