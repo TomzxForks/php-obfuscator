@@ -16,6 +16,14 @@ class MinifyPrettyPrinter extends \PhpParser\PrettyPrinter\Standard
     protected $keepFormatting = false;
 
     /**
+     * @param array $options
+     */
+    public function __construct(array $options = []) {
+        parent::__construct($options);
+        $this->keepIndentToken = '_KEEP_INDENT_' . mt_rand();
+    }
+
+    /**
      * @param bool $keepComments
      * @return $this
      */
@@ -43,7 +51,13 @@ class MinifyPrettyPrinter extends \PhpParser\PrettyPrinter\Standard
      */
     public function prettyPrint(array $stmts)
     {
-        return $this->removeFormatting(parent::prettyPrint($stmts));
+        $this->preprocessNodes($stmts);
+
+        $output = $this->pStmts($stmts, false);
+        $output = $this->removeFormatting($output);
+        $output = $this->handleMagicTokens($output);
+
+        return $output;
     }
 
     /**
@@ -52,17 +66,33 @@ class MinifyPrettyPrinter extends \PhpParser\PrettyPrinter\Standard
      */
     public function prettyPrintExpr(Expr $node)
     {
-        return $this->removeFormatting($this->handleMagicTokens($this->p($node)));
+        $output = $this->p($node);
+        $output = $this->removeFormatting($output);
+        $output = $this->handleMagicTokens($output);
+
+        return $output;
+    }
+
+    protected function handleMagicTokens($str)
+    {
+        if ($this->keepFormatting) {
+            $str = str_replace($this->keepIndentToken, "", $str);
+        } else {
+            $str = str_replace($this->keepIndentToken, "\n", $str);
+            // If we lose the formatting, we still need the heredoc to render properly
+            $str = str_replace($this->noIndentToken, "\n", $str);
+        }
+
+        return parent::handleMagicTokens($str);
     }
 
     protected function removeFormatting($string)
     {
         if ($this->keepFormatting) {
-            return str_replace('__MAGIC_LINE_SEPARATOR__', "\n", $string);
+            return $string;
         }
 
-        $string = str_replace("\n", '', $string);
-        $string = str_replace('__MAGIC_LINE_SEPARATOR__', "\n", $string);
+        $string = preg_replace("/\r\n|\n/", '', $string);
         return $string;
     }
 
@@ -78,7 +108,7 @@ class MinifyPrettyPrinter extends \PhpParser\PrettyPrinter\Standard
 
     /**
      * @param array $comments
-     * @return null
+     * @return string|null
      */
     protected function pComments(array $comments)
     {
@@ -87,8 +117,13 @@ class MinifyPrettyPrinter extends \PhpParser\PrettyPrinter\Standard
             return;
         }
 
-        // Use a magic token so we can replace it after stripping the \n
-        return parent::pComments($comments).'__MAGIC_LINE_SEPARATOR__';
+        $formattedComments = [];
+
+        foreach ($comments as $comment) {
+            $formattedComments[] = preg_replace('/\r\n|\n/', $this->keepIndentToken."\n", $comment->getReformattedText());
+        }
+
+        return $this->keepIndentToken.implode($this->keepIndentToken, $formattedComments).$this->keepIndentToken;
     }
 
 }
