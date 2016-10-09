@@ -9,19 +9,16 @@
 namespace Naneau\Obfuscator\Console\Command;
 
 use Illuminate\Filesystem\Filesystem;
+use InvalidArgumentException;
 use Naneau\Obfuscator\Container;
-
 use Naneau\Obfuscator\Obfuscator;
 use Naneau\Obfuscator\Obfuscator\Event\File as FileEvent;
 use Naneau\Obfuscator\Obfuscator\Event\FileError as FileErrorEvent;
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use \InvalidArgumentException;
 
 /**
  * ObfuscateCommand
@@ -68,10 +65,15 @@ class ObfuscateCommand extends Command
                 InputArgument::OPTIONAL,
                 'Output directory'
             )->addOption(
-                'leave_whitespace',
+                'keep_formatting',
                 null,
                 InputOption::VALUE_NONE,
-                'Leave whitespace in output?'
+                'Keep formatting in output?'
+            )->addOption(
+                'keep_comments',
+                null,
+                InputOption::VALUE_NONE,
+                'Keep comments in output?'
             )->addOption(
                 'ignore_error',
                 null,
@@ -118,8 +120,8 @@ class ObfuscateCommand extends Command
             $directory = $inputDirectory;
         }
 
-        // Strip whitespace?
-        $stripWhitespace = !$input->getOption('leave_whitespace');
+        $keepFormatting = $input->getOption('keep_formatting');
+        $keepComments = $input->getOption('keep_comments');
         $ignoreError = !!$input->getOption('ignore_error');
 
         // Show every file
@@ -148,9 +150,14 @@ class ObfuscateCommand extends Command
             );
         }
 
+        $options = [
+            'keep_formatting' => $keepFormatting,
+            'keep_comments'   => $keepComments,
+            'ignore_error'    => $ignoreError,
+        ];
+
         // Actual obfuscation
-        $this->getObfuscator()->obfuscate($directory, $stripWhitespace,
-            $ignoreError);
+        $this->getObfuscator()->obfuscate($directory, $options);
     }
 
     /**

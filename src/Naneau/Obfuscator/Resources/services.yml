@@ -96,7 +96,7 @@ services:
 
     # Pretty printer
     obfuscator.pretty_printer:
-        class: PhpParser\PrettyPrinter\Standard
+        class: Naneau\Obfuscator\MinifyPrettyPrinter
 
     # Event dispatcher
     obfuscator.event_dispatcher:

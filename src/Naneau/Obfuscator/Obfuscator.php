@@ -76,11 +76,9 @@ class Obfuscator
      * Strip whitespace
      *
      * @param  string $directory
-     * @param  bool   $stripWhitespace
-     * @return void
-     **/
-    public function obfuscate($directory, $stripWhitespace = false,
-        $ignoreError = false)
+     * @param array $options
+     */
+    public function obfuscate($directory, array $options)
     {
         foreach ($this->getFiles($directory) as $file) {
             $this->getEventDispatcher()->dispatch(
@@ -89,13 +87,7 @@ class Obfuscator
             );
 
             // Write obfuscated source
-            file_put_contents($file, $this->obfuscateFileContents($file,
-                $ignoreError));
-
-            // Strip whitespace if required
-            if ($stripWhitespace) {
-                file_put_contents($file, php_strip_whitespace($file));
-            }
+            file_put_contents($file, $this->obfuscateFileContents($file, $options));
         }
     }
 
@@ -233,18 +225,16 @@ class Obfuscator
      * Obfuscate a single file's contents
      *
      * @param  string $file
-     * @param  boolean $ignoreError if true, do not throw an Error and
-     *                              exit, but continue with next file
      * @return string obfuscated contents
      **/
-    public function obfuscateFileContents($file, $ignoreError)
+    public function obfuscateFileContents($file, array $options = [])
     {
         try {
-            $source = php_strip_whitespace($file);
+            $source = file_get_contents($file);
 
-            return $this->obfuscateContent($source);
+            return $this->obfuscateContent($source, $options);
         } catch (Exception $e) {
-            if($ignoreError) {
+            if(isset($options['ignore_error'])) {
                 sprintf('Could not parse file "%s"', $file);
                 $this->getEventDispatcher()->dispatch(
                     'obfuscator.file.error',
@@ -264,13 +254,18 @@ class Obfuscator
      * @param string $source
      * @return string
      */
-    public function obfuscateContent($source)
+    public function obfuscateContent($source, array $options = [])
     {
         // Get AST
         $ast = $this->getTraverser()->traverse(
             $this->getParser()->parse($source)
         );
 
-        return "<?php\n" . $this->getPrettyPrinter()->prettyPrint($ast);
+        $output = $this->getPrettyPrinter()
+            ->setKeepComments(isset($options['keep_comments']) ? $options['keep_comments'] : false)
+            ->setKeepFormatting(isset($options['keep_formatting']) ? $options['keep_formatting'] : false)
+            ->prettyPrint($ast);
+
+        return "<?php\n" . $output;
     }
 }
