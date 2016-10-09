@@ -242,7 +242,7 @@ class Obfuscator
         try {
             $source = php_strip_whitespace($file);
 
-            $this->obfuscateContent($source);
+            return $this->obfuscateContent($source);
         } catch (Exception $e) {
             if($ignoreError) {
                 sprintf('Could not parse file "%s"', $file);
